@@ -27,6 +27,10 @@ public class MainController {
         if(originalURL == null || originalURL.equals("") || clientId == null || clientId.equals("")) {
             return new ResponseEntity<>("URL/Client Id missing.", HttpStatus.BAD_REQUEST);
         }
+        if(obj.getExpiryTime() == null || obj.getExpiryTime() == 0) {
+            logger.info("Expiry Time not present so setting to default time of 30 days");
+            obj.setExpiryTime(30L);
+        }
         String encodedURL = service.encodeURL(obj);
         return new ResponseEntity<>(encodedURL, HttpStatus.OK);
     }

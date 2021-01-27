@@ -13,6 +13,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static com.yato.urlshortener.constants.GlobalConstants.BASE_URL;
 
@@ -33,16 +34,21 @@ public class MainService {
             encodedURL = storedObj.get().getShortURL();
         } else {
             logger.info("URL not present in database for the clientId: {}. Generating new value", obj.getClientId());
+            Long currentTime = System.currentTimeMillis();
+            Long expiryTime = TimeUnit.DAYS.toMillis(obj.getExpiryTime());
             // Added clientId to originalURL to generate new shortURL for different clientId with same originalURL
-            encodedURL = URLBuilder(encoder(obj.getOriginalURL() + obj.getClientId()));
+            encodedURL = urlBuilder(encoder(obj.getOriginalURL() + obj.getClientId()));
             obj.setShortURL(encodedURL);
+            obj.setRedirectionCount(0L);
+            obj.setEntryAdditionTime(currentTime);
+            obj.setExpiryTime(expiryTime);
             urlMappingsRepository.save(obj);
         }
 
         return encodedURL;
     }
 
-    public String URLBuilder(String identifier) {
+    public String urlBuilder(String identifier) {
         return BASE_URL.concat("/r/").concat(identifier);
     }
 
@@ -50,7 +56,7 @@ public class MainService {
         String updatedValue = value.concat(String.valueOf(counter));
         counter+=1;
         UUID id = UUID.nameUUIDFromBytes(updatedValue.getBytes());
-        return FriendlyId.toFriendlyId(id);
+        return FriendlyId.toFriendlyId(id).substring(0,8);
     }
 
     public String getOriginalURL(RequestObject obj) throws ShortURLNotPresentException {
@@ -65,9 +71,13 @@ public class MainService {
     }
 
     public RedirectView redirectURL(String urlIdentifier, RequestObject obj) throws ShortURLNotPresentException {
-        Optional<RequestObject> storedObj = urlMappingsRepository.findRequestByUserIdAndShortURL(obj.getClientId(), URLBuilder(urlIdentifier));
+        String clientId = obj.getClientId();
+        String shortURL = urlBuilder(urlIdentifier);
+        Optional<RequestObject> storedObj = urlMappingsRepository.findRequestByUserIdAndShortURL(clientId, shortURL);
         if(storedObj.isPresent()) {
-            logger.info("Original URL present in database. Returning value and redirecting");
+            logger.info("Original URL present in database. Incrementing counter, and redirecting");
+            urlMappingsRepository.updateRedirectionCount(storedObj.get().getRedirectionCount()+1, clientId, shortURL);
+
             RedirectView redirectView = new RedirectView();
             redirectView.setUrl(storedObj.get().getOriginalURL());
 
@@ -76,4 +86,5 @@ public class MainService {
             throw new ShortURLNotPresentException("Short URL not present in database for clientId: " + obj.getClientId());
         }
     }
+
 }

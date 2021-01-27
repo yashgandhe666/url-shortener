@@ -26,6 +26,15 @@ public class RequestObject {
     @Column(name="short_url")
     private String shortURL;
 
+    @Column(name="redirection_count")
+    private Long redirectionCount;
+
+    @Column(name="entry_addition_time")
+    private Long entryAdditionTime;
+
+    @Column(name="expiry_time")
+    private Long expiryTime;
+
     public RequestObject(){}
 
     @Override
@@ -34,6 +43,9 @@ public class RequestObject {
                 "clientId='" + clientId + '\'' +
                 ", originalURL='" + originalURL + '\'' +
                 ", shortURL='" + shortURL + '\'' +
+                ", redirectionCount=" + redirectionCount +
+                ", entryAdditionTime=" + entryAdditionTime +
+                ", expiryTime=" + expiryTime +
                 '}';
     }
 }
