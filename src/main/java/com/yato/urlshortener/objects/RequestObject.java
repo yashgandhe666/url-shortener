@@ -3,11 +3,10 @@ package com.yato.urlshortener.objects;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,6 +16,9 @@ import javax.persistence.Table;
 public class RequestObject {
 
     @Id
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    private long  uuid;
+
     @Column(name="id")
     private String clientId;
 

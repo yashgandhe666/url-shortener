@@ -54,12 +54,12 @@ public class MainController {
 
     // TODO: Handle requests based on clientId
     @GetMapping("/r/{id}")
-    public Object localRedirect(@PathVariable String id, @RequestBody RequestObject obj) {
+    public Object localRedirect(@PathVariable String id) {
         RedirectView redirectView;
         try {
-            redirectView = service.redirectURL(id, obj);
+            redirectView = service.redirectURL(id);
         } catch (ShortURLNotPresentException e) {
-            logger.error("Short URL not present in database for clientId: {}", obj.getClientId());
+            logger.error("Short URL not present in database for clientId");
             return new ResponseEntity<>("Original URL for the given short URL not found", HttpStatus.BAD_REQUEST);
         }
         return redirectView;

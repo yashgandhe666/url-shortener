@@ -22,6 +22,9 @@ public interface URLMappingsRepository extends JpaRepository<RequestObject, Long
     @Query("SELECT N FROM RequestObject N WHERE N.clientId = ?1 AND N.shortURL = ?2")
     Optional<RequestObject> findRequestByUserIdAndShortURL(String id, String shortURL);
 
+    @Query("SELECT N FROM RequestObject N WHERE N.shortURL = ?1")
+    Optional<RequestObject> findRequestByShortURL(String shortURL);
+
     @Modifying(clearAutomatically=true)
     @Transactional
     @Query("UPDATE RequestObject N SET N.redirectionCount = ?1 WHERE N.clientId = ?2 AND N.shortURL = ?3")

@@ -70,12 +70,13 @@ public class MainService {
         }
     }
 
-    public RedirectView redirectURL(String urlIdentifier, RequestObject obj) throws ShortURLNotPresentException {
-        String clientId = obj.getClientId();
+    public RedirectView redirectURL(String urlIdentifier) throws ShortURLNotPresentException {
+
         String shortURL = urlBuilder(urlIdentifier);
-        Optional<RequestObject> storedObj = urlMappingsRepository.findRequestByUserIdAndShortURL(clientId, shortURL);
+        Optional<RequestObject> storedObj = urlMappingsRepository.findRequestByShortURL(shortURL);
         if(storedObj.isPresent()) {
             logger.info("Original URL present in database. Incrementing counter, and redirecting");
+            String clientId = storedObj.get().getClientId();
             urlMappingsRepository.updateRedirectionCount(storedObj.get().getRedirectionCount()+1, clientId, shortURL);
 
             RedirectView redirectView = new RedirectView();
@@ -83,7 +84,7 @@ public class MainService {
 
             return redirectView;
         } else {
-            throw new ShortURLNotPresentException("Short URL not present in database for clientId: " + obj.getClientId());
+            throw new ShortURLNotPresentException("Short URL not present in database");
         }
     }
 
